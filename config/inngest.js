@@ -3,7 +3,7 @@ import connectDB from "./db";
 import User from "@/models/User";
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: "shopify-next" });
+export const inngest = new Inngest({ id: "shopify-next", telemetry: false,});
 
 export const syncUserCreation = inngest.createFunction(
     {
