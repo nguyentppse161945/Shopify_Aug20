@@ -7,7 +7,7 @@ export const inngest = new Inngest({ id: "shopify-next", telemetry: false,});
 
 export const syncUserCreation = inngest.createFunction(
     {
-        id: "sync-user-creation"
+        id: "sync-user-from-clerk"
     },
     { event: "clerk/user.created" },
     async ({ event, }) => {
@@ -28,7 +28,7 @@ export const syncUserCreation = inngest.createFunction(
 //Inngest Function to update user data in db
 export const syncUserUpdate = inngest.createFunction(
     {
-        id: "sync-user-update"
+        id: "update-user-from-clerk"
     },
     { event: "clerk/user.updated" },
     async ({ event, }) => {
@@ -47,7 +47,7 @@ export const syncUserUpdate = inngest.createFunction(
 // Inngest Function to delete user data in db
 export const syncUserDeletion = inngest.createFunction(
     {
-        id: "delete-user-deletion"
+        id: "delete-user-with-clerk"
     },
     { event: "clerk/user.deleted" },
     async ({ event, }) => {
