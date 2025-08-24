@@ -17,3 +17,7 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+[data-nextjs-dev-overlay] {
+  display: none !important;
+}

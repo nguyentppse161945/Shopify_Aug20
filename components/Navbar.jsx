@@ -34,14 +34,14 @@ const Navbar = () => {
           Contact
         </Link>
 
-        {isSeller && (
+        {isSeller &&  (
           <button
             onClick={() => router.push("/seller")}
             className="text-xs border px-4 py-1.5 rounded-full"
           >
             Seller Dashboard
           </button>
-        )}
+        ) }
       </div>
 
       <ul className="hidden md:flex items-center gap-4 ">
@@ -86,7 +86,7 @@ const Navbar = () => {
         )}
         {isSignedIn ? (
           <>
-            <UserButton afterSignOutUrl="/">
+            <UserButton>
               <UserButton.MenuItems>
                 <UserButton.Action
                   label="Home"
