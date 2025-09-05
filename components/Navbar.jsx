@@ -4,6 +4,7 @@ import { assets, BagIcon, CartIcon, HomeIcon } from "@/assets/assets";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
+import { useEffect } from "react";
 //auth
 import { useClerk, UserButton,useUser } from "@clerk/nextjs";
 
@@ -11,7 +12,13 @@ const Navbar = () => {
   const { isSeller, router, user } = useAppContext();
   const { openSignIn } = useClerk();
   const { isSignedIn } = useUser(); // ✅ Clerk handles auth state
+  
+  //  useEffect(() => {
+  //   if (isSignedIn) {
+  //            fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/user/syncUser`, { method: "GET" });
 
+  //   }
+  // }, [isSignedIn]);
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700">
       <Image

@@ -21,6 +21,7 @@ export const syncUserCreation = inngest.createFunction(
         }
         await connectDB();
         await User.create(userData);
+        
 
     }
 

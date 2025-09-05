@@ -17,7 +17,7 @@ export const AppContextProvider = (props) => {
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
-  const {getToken} = useAuth();
+  const { getToken } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [userData, setUserData] = useState(false);
@@ -29,24 +29,27 @@ export const AppContextProvider = (props) => {
   };
 
   const fetchUserData = async () => {
-   try{
+    try {
       if (user.publicMetadata.role == "seller") {
-      setIsSeller(true);
-    }
+        setIsSeller(true);
+      }
 
-    const token = await getToken();
-    const {data} = await axios.get('/api/user/data',{headers: { Authorization: `Bearer ${token}` }});
-    
-    if (data.success) {
-      setUserData(data.user);
-      setCartItems(data.user.cartItems || {});
-    } else {
+      const token = await getToken();
+      await fetch("/api/user/syncUser");
+      const { data } = await axios.get("/api/user/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        setUserData(data.user);
+        setCartItems(data.user.cartItems || {});
+      } else {
         toast.error(data.message);
-     } 
+      }
 
-    // setUserData(userDummyData);
-   }catch (error) {
-        toast.error(error.message);
+      // setUserData(userDummyData);
+    } catch (error) {
+      toast.error(error.message);
     }
   };
 
@@ -95,17 +98,16 @@ export const AppContextProvider = (props) => {
     fetchProductData();
   }, []);
 
-//   useEffect(() => {
-//     if (user) {
-//       fetchUserData();
-//     }
-//   }, [user]);
+  //   useEffect(() => {
+  //     if (user) {
+  //       fetchUserData();
+  //     }
+  //   }, [user]);
 
-useEffect(() => {
+  useEffect(() => {
     if (user) {
       fetchUserData();
-    }
-    else{
+    } else {
       setIsSeller(false);
     }
   }, [user]);

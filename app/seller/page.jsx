@@ -4,21 +4,59 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
 import axios from "axios";
-import { NextResponse } from "next/server";
 import toast from "react-hot-toast";
+import { z } from "zod";
+
+// ✅ Define Zod schema
+const productSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
+  price: z
+    .string()
+    .min(1, "Price is required")
+    .refine((val) => Number(val) > 0, "Price must be greater than 0"),
+  offerPrice: z
+    .string()
+    .min(1, "Offer Price is required")
+    .refine((val) => Number(val) >= 0, "Offer Price must be >= 0"),
+  files: z
+    .array(z.any())
+    .min(1, "At least one product image is required"),
+});
 
 const AddProduct = () => {
-  const {getToken} = useAppContext();
+  const { getToken } = useAppContext();
 
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState([]); // ✅ removed <File[]>
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Earphone");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => { // ✅ removed : React.FormEvent
     e.preventDefault();
+
+    // ✅ Validate using Zod
+    const validation = productSchema.safeParse({
+      name,
+      description,
+      category,
+      price,
+      offerPrice,
+      files,
+    });
+
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+
+    if (isLoading) return; // ✅ Prevent double submit
+
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("name", name);
@@ -26,32 +64,35 @@ const AddProduct = () => {
     formData.append("category", category);
     formData.append("price", price);
     formData.append("offerPrice", offerPrice);
-    //images
-    for (let i = 0; i < files.length; i++) {
-      {
-        formData.append("images", files[i]);
+
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    try {
+      const token = await getToken();
+      const { data } = await axios.post("/api/product/add", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (data.success) {
+        toast.success(data.message);
+        // ✅ Reset form
+        setFiles([]);
+        setName("");
+        setDescription("");
+        setCategory("Earphone");
+        setPrice("");
+        setOfferPrice("");
+      } else {
+        toast.error(data.message);
       }
+    } catch (error) { // ✅ removed : any
+      console.error(error);
+      toast.error(error.message || "Something went wrong");
+    } finally {
+      setIsLoading(false);
     }
-     try {
-        const token = await getToken();
-        const { data } = await axios.post("/api/product/add", formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (data.success) {
-          toast.success(data.message);
-          setFiles([]);
-          setName("");
-          setDescription("");
-          setCategory("Earphone");
-          setPrice("");
-          setOfferPrice("");
-        } else {
-          toast.error(data.message);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error(error.message);
-      }
   };
 
   return (
@@ -65,8 +106,10 @@ const AddProduct = () => {
                 <input
                   onChange={(e) => {
                     const updatedFiles = [...files];
-                    updatedFiles[index] = e.target.files[0];
-                    setFiles(updatedFiles);
+                    if (e.target.files?.[0]) {
+                      updatedFiles[index] = e.target.files[0];
+                      setFiles(updatedFiles);
+                    }
                   }}
                   type="file"
                   id={`image${index}`}
@@ -88,6 +131,8 @@ const AddProduct = () => {
             ))}
           </div>
         </div>
+
+        {/* Product Name */}
         <div className="flex flex-col gap-1 max-w-md">
           <label className="text-base font-medium" htmlFor="product-name">
             Product Name
@@ -99,14 +144,12 @@ const AddProduct = () => {
             className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
             onChange={(e) => setName(e.target.value)}
             value={name}
-            required
           />
         </div>
+
+        {/* Description */}
         <div className="flex flex-col gap-1 max-w-md">
-          <label
-            className="text-base font-medium"
-            htmlFor="product-description"
-          >
+          <label className="text-base font-medium" htmlFor="product-description">
             Product Description
           </label>
           <textarea
@@ -116,9 +159,10 @@ const AddProduct = () => {
             placeholder="Type here"
             onChange={(e) => setDescription(e.target.value)}
             value={description}
-            required
           ></textarea>
         </div>
+
+        {/* Category / Price / Offer Price */}
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex flex-col gap-1 w-32">
             <label className="text-base font-medium" htmlFor="category">
@@ -128,7 +172,7 @@ const AddProduct = () => {
               id="category"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setCategory(e.target.value)}
-              defaultValue={category}
+              value={category}
             >
               <option value="Earphone">Earphone</option>
               <option value="Headphone">Headphone</option>
@@ -139,6 +183,7 @@ const AddProduct = () => {
               <option value="Accessories">Accessories</option>
             </select>
           </div>
+
           <div className="flex flex-col gap-1 w-32">
             <label className="text-base font-medium" htmlFor="product-price">
               Product Price
@@ -150,9 +195,9 @@ const AddProduct = () => {
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setPrice(e.target.value)}
               value={price}
-              required
             />
           </div>
+
           <div className="flex flex-col gap-1 w-32">
             <label className="text-base font-medium" htmlFor="offer-price">
               Offer Price
@@ -164,18 +209,23 @@ const AddProduct = () => {
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setOfferPrice(e.target.value)}
               value={offerPrice}
-              required
             />
           </div>
         </div>
+
+        {/* ✅ Disable button while loading */}
         <button
           type="submit"
-          className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded"
+          disabled={isLoading}
+          className={`px-8 py-2.5 font-medium rounded text-white ${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-orange-600 hover:bg-orange-700"
+          }`}
         >
-          ADD
+          {isLoading ? "Adding..." : "ADD"}
         </button>
       </form>
-      {/* <Footer /> */}
     </div>
   );
 };
