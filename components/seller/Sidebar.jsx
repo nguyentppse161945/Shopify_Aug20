@@ -7,9 +7,16 @@ import { usePathname } from 'next/navigation';
 const SideBar = () => {
     const pathname = usePathname()
     const menuItems = [
+        { name: 'Dashboard', path: '/seller/dashboard', icon: assets.dashboard_icon },
         { name: 'Add Product', path: '/seller', icon: assets.add_icon },
         { name: 'Product List', path: '/seller/product-list', icon: assets.product_list_icon },
+        { name: 'Add Category', path: '/seller/category', icon: assets.add_icon },
+        { name: 'Category List', path: '/seller/category-list', icon: assets.product_list_icon },
         { name: 'Orders', path: '/seller/orders', icon: assets.order_icon },
+        { name: 'Order History', path: '/seller/order-history', icon: assets.order_history_icon },
+        { name: 'Revenue Report', path: '/seller/revenue-report', icon: assets.revenue_icon },
+
+
     ];
 
     return (
