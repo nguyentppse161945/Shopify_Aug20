@@ -7,6 +7,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
+
+
 // ✅ Define Zod schema
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
@@ -23,10 +25,16 @@ const productSchema = z.object({
   files: z
     .array(z.any())
     .min(1, "At least one product image is required"),
-});
+}) .refine(
+    (data) => Number(data.price) >= Number(data.offerPrice),
+    {
+      message: "Product price must be greater or equal to offer price",
+      path: ["offerPrice"], // 👈 attach error to offerPrice field
+    }
+  );;
 
 const AddProduct = () => {
-  const { getToken } = useAppContext();
+  const { getToken ,products} = useAppContext();
 
   const [files, setFiles] = useState([]); // ✅ removed <File[]>
   const [name, setName] = useState("");
@@ -53,7 +61,13 @@ const AddProduct = () => {
       toast.error(validation.error.errors[0].message);
       return;
     }
-
+    const nameExists = products.some(
+    (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
+  );
+  if (nameExists) {
+    toast.error("A product with this name already exists");
+    return;
+  }
     if (isLoading) return; // ✅ Prevent double submit
 
     setIsLoading(true);
@@ -74,7 +88,7 @@ const AddProduct = () => {
       const { data } = await axios.post("/api/product/add", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+      
       if (data.success) {
         toast.success(data.message);
         // ✅ Reset form

@@ -9,9 +9,8 @@ import toast from "react-hot-toast";
 
 export const AppContext = createContext();
 
-export const useAppContext = () => {
-  return useContext(AppContext);
-};
+export const useAppContext = () => useContext(AppContext);
+
 
 export const AppContextProvider = (props) => {
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
@@ -37,9 +36,13 @@ export const AppContextProvider = (props) => {
     }
   };
 
+  useEffect(() => {
+    fetchProductData();
+  }, []);
+
   const fetchUserData = async () => {
     try {
-      if (user.publicMetadata.role == "seller") {
+      if (user?.publicMetadata?.role === "seller") {
         setIsSeller(true);
       }
 
@@ -54,7 +57,6 @@ export const AppContextProvider = (props) => {
       } else {
         toast.error(data.message);
       }
-
     } catch (error) {
       toast.error(error.message);
     }
@@ -62,13 +64,9 @@ export const AppContextProvider = (props) => {
 
   const addToCart = async (itemId) => {
     let cartData = structuredClone(cartItems);
-    if (cartData[itemId]) {
-      cartData[itemId] += 1;
-    } else {
-      cartData[itemId] = 1;
-    }
+    cartData[itemId] = (cartData[itemId] || 0) + 1;
     setCartItems(cartData);
-    //here
+
     if (user) {
       try {
         const token = await getToken();
@@ -105,41 +103,19 @@ export const AppContextProvider = (props) => {
       } catch (error) {
         toast.error(error.message);
       }
-    } else {
-      toast.error(error.message);
     }
   };
 
-  const getCartCount = () => {
-    let totalCount = 0;
-    for (const items in cartItems) {
-      if (cartItems[items] > 0) {
-        totalCount += cartItems[items];
-      }
-    }
-    return totalCount;
-  };
+  const getCartCount = () =>
+    Object.values(cartItems).reduce((acc, qty) => acc + qty, 0);
 
-  const getCartAmount = () => {
-    let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
-      if (cartItems[items] > 0) {
-        totalAmount += itemInfo.offerPrice * cartItems[items];
-      }
-    }
-    return Math.floor(totalAmount * 100) / 100;
-  };
-
-  useEffect(() => {
-    fetchProductData();
-  }, []);
-
-  //   useEffect(() => {
-  //     if (user) {
-  //       fetchUserData();
-  //     }
-  //   }, [user]);
+  const getCartAmount = () =>
+    Math.floor(
+      Object.entries(cartItems).reduce((acc, [id, qty]) => {
+        const item = products.find((p) => p._id === id);
+        return item ? acc + item.offerPrice * qty : acc;
+      }, 0) * 100
+    ) / 100;
 
   useEffect(() => {
     if (user) {
@@ -169,6 +145,9 @@ export const AppContextProvider = (props) => {
   };
 
   return (
-    <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
+    <AppContext.Provider value={value}>
+      {props.children}
+    </AppContext.Provider>
   );
 };
+
