@@ -42,6 +42,7 @@ export const AppContextProvider = (props) => {
 
   const fetchUserData = async () => {
     try {
+      await axios.get("/api/user/syncUser");
       if (user?.publicMetadata?.role === "seller") {
         setIsSeller(true);
       }
