@@ -20,13 +20,12 @@ export async function POST(request) {
         await inngest.send({
             name: "order/created",
             data: {
-                data: {
-                    userId,
-                    address,
-                    items,
-                    amount: amount + Math.floor(amount * 0.02), // including 2% tax
-                    date: Date.now(),
-                }
+                userId,
+                address,
+                items,
+                amount: amount + Math.floor(amount * 0.02), // including 2% tax
+                date: Date.now(),
+
             }
         });
 
