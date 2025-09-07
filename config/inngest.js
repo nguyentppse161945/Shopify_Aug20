@@ -1,9 +1,10 @@
 import { Inngest } from "inngest";
 import connectDB from "./db";
 import User from "@/models/User";
+import Order from "@/models/Order";
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ id: "shopify-next", telemetry: false,});
+export const inngest = new Inngest({ id: "shopify-next", telemetry: false, });
 
 export const syncUserCreation = inngest.createFunction(
     {
@@ -21,7 +22,7 @@ export const syncUserCreation = inngest.createFunction(
         }
         await connectDB();
         await User.create(userData);
-        
+
 
     }
 
@@ -57,3 +58,33 @@ export const syncUserDeletion = inngest.createFunction(
         await User.findByIdAndDelete(id);
     }
 );
+
+//inngest Function to handle order creation event from user
+
+
+export const createUserOrder = inngest.createFunction(
+    {
+        id: "create-user-order",
+        batchEvents: {
+            maxSize: 5,
+            timeout: '5s'
+        },
+    },
+    { event: "order/created" },
+    async ({ events }) => {
+
+        const orders = events.map((event) => {
+            return {
+                userId: events.data.userId,
+                items: events.data.items,
+                amount: events.data.amount,
+                address: events.data.address,
+                date: events.data.date,
+            }
+        })
+
+        await connectDB();
+        await Order.insertMany(orders);
+        return { success: true, processed: orders.length }
+    }
+)
