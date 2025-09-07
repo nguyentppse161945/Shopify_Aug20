@@ -14,9 +14,9 @@ export const syncUserCreation = inngest.createFunction(
     async ({ event, }) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data;
         const userData = {
-            _id: clerkUserId,
+            _id: id,
             email: email_addresses[0].email_address,
-            name: `${first_name} ${last_name}`,
+            name: first_name + ' ' + last_name,
             imageUrl: image_url,
 
         }
@@ -75,11 +75,11 @@ export const createUserOrder = inngest.createFunction(
 
         const orders = events.map((event) => {
             return {
-                userId: events.data.userId,
-                items: events.data.items,
-                amount: events.data.amount,
-                address: events.data.address,
-                date: events.data.date,
+                userId: event.data.userId,
+                items: event.data.items,
+                amount: event.data.amount,
+                address: event.data.address,
+                date: event.data.date,
             }
         })
 

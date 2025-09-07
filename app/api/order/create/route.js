@@ -1,4 +1,5 @@
 import { inngest } from '@/config/inngest';
+import Product from '@/models/Product';
 import User from '@/models/User';
 import { getAuth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -10,8 +11,10 @@ export async function POST(request) {
         if (!address || items.length === 0) {
             return NextResponse.json({ success: false, message: "Address and items are required to place an order" });
         }
+
         const amount = await items.reduce(async (acc, item) => {
-            return acc + products.offerPrice * item.quantity;
+            const product = await Product.findById(item.product);
+            return await acc + product.offerPrice * item.quantity;
         }, 0);
 
         await inngest.send({
