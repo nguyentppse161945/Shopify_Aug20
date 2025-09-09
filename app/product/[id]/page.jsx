@@ -105,7 +105,7 @@ const Product = () => {
                                 <tr>
                                     <td className="text-gray-600 font-medium">Category</td>
                                     <td className="text-gray-800/50">
-                                        {productData.category}
+                                        {productData.category?.name}
                                     </td>
                                 </tr>
                             </tbody>

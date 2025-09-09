@@ -7,7 +7,8 @@ export async function GET(request) {
 
 
         await connectDB();
-        const products = await Product.find({});
+        const products = await Product.find({})
+            .populate("category", "name");
         return NextResponse.json({ success: true, products });
     }
     catch (error) {

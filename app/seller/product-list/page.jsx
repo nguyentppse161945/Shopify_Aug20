@@ -76,7 +76,7 @@ const ProductList = () => {
                       <span className="truncate w-full">{product.name}</span>
                     </td>
                     <td className="px-4 py-3 max-sm:hidden">
-                      {product.category}
+                      {product.category?.name}
                     </td>
                     <td className="px-4 py-3">${product.offerPrice}</td>
                     <td className="px-4 py-3 max-sm:hidden">

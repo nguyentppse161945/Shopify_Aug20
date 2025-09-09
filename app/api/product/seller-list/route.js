@@ -4,20 +4,21 @@ import Product from "@/models/Product";
 import { NextResponse } from "next/server";
 import connectDB from "@/config/db";
 
-export async function GET(request){
-    try{
-        const {userId} = getAuth(request);
+export async function GET(request) {
+    try {
+        const { userId } = getAuth(request);
         const isSeller = authSeller(userId);
 
-        if(!isSeller){
-            return NextResponse.json({success:false, message:"You are not authorized to perform this action"},{status:403});
+        if (!isSeller) {
+            return NextResponse.json({ success: false, message: "You are not authorized to perform this action" }, { status: 403 });
         }
 
         await connectDB();
-        const products = await Product.find({});
-        return NextResponse.json({success:true, products},{status:200});
+        const products = await Product.find({userId})
+            .populate("category", "name");
+        return NextResponse.json({ success: true, products }, { status: 200 });
     }
-    catch(error){
-        return NextResponse.json({success:false, message:error.message},{status:500});
+    catch (error) {
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 } 
