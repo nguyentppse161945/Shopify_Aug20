@@ -7,44 +7,40 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
-
-
 // ✅ Define Zod schema
-const productSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
-  description: z.string().min(1, "Description is required"),
-  category: z.string().min(1, "Category is required"),
-  price: z
-    .string()
-    .min(1, "Price is required")
-    .refine((val) => Number(val) > 0, "Price must be greater than 0"),
-  offerPrice: z
-    .string()
-    .min(1, "Offer Price is required")
-    .refine((val) => Number(val) >= 0, "Offer Price must be >= 0"),
-  files: z
-    .array(z.any())
-    .min(1, "At least one product image is required"),
-}) .refine(
-    (data) => Number(data.price) >= Number(data.offerPrice),
-    {
-      message: "Product price must be greater or equal to offer price",
-      path: ["offerPrice"], // 👈 attach error to offerPrice field
-    }
-  );;
+const productSchema = z
+  .object({
+    name: z.string().min(1, "Product name is required"),
+    description: z.string().min(1, "Description is required"),
+    category: z.string().min(1, "Category is required"),
+    price: z
+      .string()
+      .min(1, "Price is required")
+      .refine((val) => Number(val) > 0, "Price must be greater than 0"),
+    offerPrice: z
+      .string()
+      .min(1, "Offer Price is required")
+      .refine((val) => Number(val) >= 0, "Offer Price must be >= 0"),
+    files: z.array(z.any()).min(1, "At least one product image is required"),
+  })
+  .refine((data) => Number(data.price) >= Number(data.offerPrice), {
+    message: "Product price must be greater or equal to offer price",
+    path: ["offerPrice"], // 👈 attach error to offerPrice field
+  });
 
 const AddProduct = () => {
-  const { getToken ,products} = useAppContext();
+  const { getToken, products, categories } = useAppContext();
 
   const [files, setFiles] = useState([]); // ✅ removed <File[]>
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Earphone");
+  const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => { // ✅ removed : React.FormEvent
+  const handleSubmit = async (e) => {
+    // ✅ removed : React.FormEvent
     e.preventDefault();
 
     // ✅ Validate using Zod
@@ -62,12 +58,12 @@ const AddProduct = () => {
       return;
     }
     const nameExists = products.some(
-    (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
-  );
-  if (nameExists) {
-    toast.error("A product with this name already exists");
-    return;
-  }
+      (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
+    );
+    if (nameExists) {
+      toast.error("A product with this name already exists");
+      return;
+    }
     if (isLoading) return; // ✅ Prevent double submit
 
     setIsLoading(true);
@@ -88,20 +84,21 @@ const AddProduct = () => {
       const { data } = await axios.post("/api/product/add", formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (data.success) {
         toast.success(data.message);
         // ✅ Reset form
         setFiles([]);
         setName("");
         setDescription("");
-        setCategory("Earphone");
+        setCategory("");
         setPrice("");
         setOfferPrice("");
       } else {
         toast.error(data.message);
       }
-    } catch (error) { // ✅ removed : any
+    } catch (error) {
+      // ✅ removed : any
       console.error(error);
       toast.error(error.message || "Something went wrong");
     } finally {
@@ -163,7 +160,10 @@ const AddProduct = () => {
 
         {/* Description */}
         <div className="flex flex-col gap-1 max-w-md">
-          <label className="text-base font-medium" htmlFor="product-description">
+          <label
+            className="text-base font-medium"
+            htmlFor="product-description"
+          >
             Product Description
           </label>
           <textarea
@@ -182,7 +182,7 @@ const AddProduct = () => {
             <label className="text-base font-medium" htmlFor="category">
               Category
             </label>
-            <select
+            {/* <select
               id="category"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
               onChange={(e) => setCategory(e.target.value)}
@@ -195,6 +195,21 @@ const AddProduct = () => {
               <option value="Laptop">Laptop</option>
               <option value="Camera">Camera</option>
               <option value="Accessories">Accessories</option>
+            </select> */}
+            <select
+              id="category"
+              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+              onChange={(e) => setCategory(e.target.value)}
+              value={category}
+            >
+              <option value="" disabled>
+                Select
+              </option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 

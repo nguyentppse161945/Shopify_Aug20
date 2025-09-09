@@ -19,6 +19,7 @@ export const AppContextProvider = (props) => {
   const { getToken } = useAuth();
 
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [userData, setUserData] = useState(false);
   const [isSeller, setIsSeller] = useState(false);
   const [cartItems, setCartItems] = useState({});
@@ -38,6 +39,23 @@ export const AppContextProvider = (props) => {
 
   useEffect(() => {
     fetchProductData();
+  }, []);
+//category here
+   const fetchCategoryData = async () => {
+    try {
+      const { data } = await axios.get("/api/category/list/sub");
+      if (data.success) {
+        setCategories(data.categories);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryData();
   }, []);
 
   const fetchUserData = async () => {
@@ -143,6 +161,7 @@ export const AppContextProvider = (props) => {
     updateCartQuantity,
     getCartCount,
     getCartAmount,
+    categories
   };
 
   return (
