@@ -20,6 +20,13 @@ export async function POST(request) {
 
     await connectDB();
 
+    const exists = await Category.findOne({ name: name.trim() });
+    if (exists) {
+      return NextResponse.json(
+        { success: false, message: "Category with this name already exists" },
+        { status: 400 }
+      );
+    }
 
     const category = await Category.create({ name: name.trim() });
 

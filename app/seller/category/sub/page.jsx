@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useAppContext,categories } from "@/context/AppContext";
+import { useAppContext } from "@/context/AppContext";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { z } from "zod";
@@ -23,13 +23,15 @@ const AddParentCategory = () => {
       toast.error(validation.error.errors[0].message);
       return;
     }
-     const nameExists = categories.some(
-        (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
-      );
-      if (nameExists) {
-        toast.error("A product with this name already exists");
-        return;
-      }
+    // if (Array.isArray(categories) && categories.length > 0) {
+    //   const nameExists = categories.some(
+    //     (p) => p.name.trim().toLowerCase() === name.trim().toLowerCase()
+    //   );
+    //   if (nameExists) {
+    //     toast.error("A category with this name already exists");
+    //     return;
+    //   }
+    // }
     if (isLoading) return;
     setIsLoading(true);
 
@@ -45,11 +47,15 @@ const AddParentCategory = () => {
         toast.success(data.message);
         setName("");
       } else {
-        toast.error(error.message);
+        toast.error(data.message);
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Something went wrong");
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +71,10 @@ const AddParentCategory = () => {
 
         {/* Category Name */}
         <div className="flex flex-col gap-1">
-          <label className="text-base font-medium" htmlFor="parent-category-name">
+          <label
+            className="text-base font-medium"
+            htmlFor="parent-category-name"
+          >
             Category Name
           </label>
           <input
