@@ -161,7 +161,8 @@ export const AppContextProvider = (props) => {
     updateCartQuantity,
     getCartCount,
     getCartAmount,
-    categories
+    categories,
+    setCategories
   };
 
   return (

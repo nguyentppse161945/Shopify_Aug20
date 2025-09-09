@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { useAppContext } from "@/context/AppContext";
@@ -29,7 +29,7 @@ const productSchema = z
   });
 
 const AddProduct = () => {
-  const { getToken, products, categories } = useAppContext();
+  const { getToken, products, categories, setCategories } = useAppContext();
 
   const [files, setFiles] = useState([]); // ✅ removed <File[]>
   const [name, setName] = useState("");
@@ -38,6 +38,24 @@ const AddProduct = () => {
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = await getToken();
+        const { data } = await axios.get("/api/category/list/sub", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data.success) {
+          setCategories(data.categories);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+
+    fetchCategories();
+  }, [getToken, setCategories]);
 
   const handleSubmit = async (e) => {
     // ✅ removed : React.FormEvent
